@@ -1,0 +1,19 @@
+services:
+
+  nginx:
+    container_name: generic-secure-nginx
+    image: egemahlec/generic-secure-nginx:1.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NGINX_PORT=8080
+        - NGINX_PUBLIC_KEY_PATH=/etc/ssl/certs/nginx/cert.pem
+        - NGINX_PRIVATE_KEY_PATH=/etc/ssl/certs/nginx/key.pem
+        - NGINX_CONFIGURATION_PATH=/etc/generic-secure-nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${PWD}/certs:/etc/ssl/certs/nginx/
+      - ${PWD}/html:/var/www/nginx/html
+      - ${PWD}/conf:/etc/generic-secure-nginx

@@ -1,0 +1,58 @@
+user  nginx;
+worker_processes  auto;
+
+error_log   /dev/null;
+pid         /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+  server_tokens off;
+  client_max_body_size 0;
+  proxy_set_header X-REAL-IP $remote_addr;
+
+  include $NGINX_CONFIGURATION_PATH/upstream.conf;
+
+  server {
+    access_log /dev/null;
+
+    listen $NGINX_PORT ssl;
+
+    ssl_certificate $NGINX_PUBLIC_KEY_PATH;
+    ssl_certificate_key $NGINX_PRIVATE_KEY_PATH;
+
+    ssl_protocols TLSv1.3;
+    ssl_ciphers ECDH+AESGCM+AES256:!aNULL:!MD5:!DSS;
+
+    proxy_hide_header Strict-Transport-Security;
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains";
+
+    proxy_hide_header X-Frame-Options;
+    add_header X-Frame-Options "SAMEORIGIN";
+
+    proxy_hide_header Pragma;
+    add_header Pragma "no-cache";
+
+    proxy_hide_header X-Xss-Protection;
+    add_header X-Xss-Protection "1; mode=block";
+
+    proxy_hide_header X-Content-Type-Options;
+    add_header X-Content-Type-Options "nosniff";
+
+    proxy_hide_header Referrer-Policy;
+    add_header Referrer-Policy "same-origin";
+
+    proxy_hide_header Cache-Control;
+    add_header Cache-control "no-cache, no-store, must-revalidate, private, max-age=0";
+
+    proxy_hide_header Content-Security-Policy;
+    add_header Content-Security-Policy "default-src 'self'";
+
+    proxy_hide_header Permissions-Policy;
+    add_header Permissions-Policy "geolocation=(), camera=(), microphone=()";
+
+    include $NGINX_CONFIGURATION_PATH/endpoint.conf;
+  }
+}
